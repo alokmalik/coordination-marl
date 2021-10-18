@@ -17,7 +17,7 @@ class Scenario(BaseScenario):
         # add agents
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
-            agent.name = 'agent %d' % i
+            agent.name = 'agent_%d' % i
             if i==1:
                 agent.max_speed=.1
             else:
@@ -127,11 +127,37 @@ class Scenario(BaseScenario):
 
         return rew
 
-    def reward(self, agent, world):
+    def agent_reward(self, agent, world):
         rew = self.sparse_reward(agent, world)
         if world.use_dense_rewards:
             rew += self.dense_reward(agent, world)
         return rew
+
+    def reward(self,agent,world):
+        personal_rewards =[]
+
+        for a in world.agents:
+            personal_rewards.append(self.agent_reward(a,world))
+        
+        personal_rewards=np.array(personal_rewards)
+
+        #authoratirian network
+        n=len(world.agents)
+        network=np.zeros((n,n))
+
+        for i in range(n):
+            network[i,(i+1)%n]=1
+
+        personal_rewards= np.matmul(personal_rewards,network)
+
+        i=int(agent.name[-1])
+
+        rew=personal_rewards[i]
+        
+        
+        return rew
+
+
 
     def observation(self, agent, world):
         # get positions of all entities in this agent's reference frame

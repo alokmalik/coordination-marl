@@ -127,11 +127,39 @@ class Scenario(BaseScenario):
 
         return rew
 
-    def reward(self, agent, world):
+    def agent_reward(self, agent, world):
         rew = self.sparse_reward(agent, world)
         if world.use_dense_rewards:
             rew += self.dense_reward(agent, world)
         return rew
+
+    def reward(self,agent,world):
+        personal_rewards =[]
+
+        for agent in world.agents:
+            personal_rewards.append(self.agent_reward(agent,world))
+        
+        personal_rewards=np.array(personal_rewards)
+
+        exp_list = ['survivalist', 'communitarian', 'authoritarian',\
+         'tribal', 'semi_tribal', 'semi_authoritarian', 'semi_communitarian']
+        
+        network_config='survivalist'
+        network = np.fill_diagonal(np.zeros((3, 3), int),1)
+        if network_config=='survivalist':
+            network = np.fill_diagonal(np.zeros((3, 3), int),1)
+
+        elif network_config=='communitarian':
+            network=np.ones((3,3))
+        
+        #reward for communitarian
+        for i,agent in enumerate(world.agents):
+        #modify it later, reward for communitarian
+           rew = sum(personal_rewards)
+        
+        return rew
+
+
 
     def observation(self, agent, world):
         # get positions of all entities in this agent's reference frame
