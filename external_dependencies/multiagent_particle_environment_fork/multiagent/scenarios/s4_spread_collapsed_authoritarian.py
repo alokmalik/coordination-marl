@@ -18,7 +18,7 @@ class Scenario(BaseScenario):
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
             agent.name = 'agent_%d' % i
-            if i==1:
+            if i==0:
                 agent.max_speed=.1
             else:
                 agent.max_speed=10
@@ -105,46 +105,45 @@ class Scenario(BaseScenario):
 
         return n_collisions
 
-    def dense_reward(self, agent, world):
-        # Agents are rewarded based on minimum agent distance to each landmark
-        rew = 0
-        for l in world.landmarks:
-            dists = [np.sqrt(np.sum(np.square(a.state.p_pos - l.state.p_pos))) for a in world.agents]
-            rew -= min(dists) * 0.1
-        return rew
 
     def sparse_reward(self, agent, world):
         rew = 0
-        if agent.collide:
-            rew -= 1. * self.count_collisions(agent, world)
-
+        #if all agents are occupying a landmark then agent gets +100 reward 
         for l in world.landmarks:
             if not self.small_agents:
                 agents_in = [np.sum(np.square(a.state.p_pos - l.state.p_pos)) < a.size ** 2 for a in world.agents]
             else:
                 agents_in = [np.sum(np.square(a.state.p_pos - l.state.p_pos)) < l.size**2 for a in world.agents]
-            rew += 1. if any(agents_in) else 0.
+            rew += 100. if sum(agents_in)==len(world.agents) else 0.
 
         return rew
 
-    def agent_reward(self, agent, world):
-        rew = self.sparse_reward(agent, world)
-        if world.use_dense_rewards:
-            rew += self.dense_reward(agent, world)
+    def dense_reward(self, agent, world):
+        #the agent gets reward proportional to the nearest
+        agent_dists=[]
+        rew=0
+        dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
+        d=min(dists)
+        agent_dists.append(d)
+        rew -= min(dists) * 0.1
+        if d<agent.size:
+            rew+=1
         return rew
+        
+         
 
     def reward(self,agent,world):
         personal_rewards =[]
 
         for a in world.agents:
-            personal_rewards.append(self.agent_reward(a,world))
+            personal_rewards.append(self.dense_reward(a,world))
         
         personal_rewards=np.array(personal_rewards)
 
-        #authoratirian network
+        #survivalist network
         n=len(world.agents)
         network=np.zeros((n,n))
-        np.fill_diagonal(network,1)
+        #np.fill_diagonal(network,1)
         network[:,0]=1
 
         personal_rewards= np.matmul(personal_rewards,network)
@@ -152,7 +151,6 @@ class Scenario(BaseScenario):
         i=int(agent.name[-1])
 
         rew=personal_rewards[i]
-        
         
         return rew
 
