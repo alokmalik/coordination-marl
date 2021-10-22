@@ -305,6 +305,7 @@ class World(object):
                 p_force[i] = (agent.mass * agent.accel if agent.accel is not None else agent.mass) * agent.action.u + noise
         return p_force
 
+
     # gather physical forces acting on entities
     def apply_environment_force(self, p_force):
         # simple (but inefficient) collision response

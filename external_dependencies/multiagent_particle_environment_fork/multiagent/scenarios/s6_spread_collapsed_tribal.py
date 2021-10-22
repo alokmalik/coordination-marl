@@ -3,7 +3,7 @@ from multiagent.core import World, Agent, Landmark
 from multiagent.scenario import BaseScenario
 
 class Scenario(BaseScenario):
-    def make_world(self, n_agents=3, use_dense_rewards=False, shuffle_landmarks=False, color_objects=False,
+    def make_world(self, n_agents=3, use_dense_rewards=False, shuffle_landmarks=False, color_objects=True,
                    small_agents=False):
         world = World()
         world.use_dense_rewards = use_dense_rewards
@@ -11,6 +11,8 @@ class Scenario(BaseScenario):
         self.color_objects = color_objects
         self.small_agents = small_agents
 
+        
+        colors=self.agent_colors(n_agents)
         # set any world properties first
         num_agents = n_agents
         num_landmarks = n_agents
@@ -22,6 +24,7 @@ class Scenario(BaseScenario):
                 agent.max_speed=.1
             else:
                 agent.max_speed=10
+            agent.color=colors[i]
             agent.clip_positions = np.array([[-world.scale, -world.scale], [world.scale, world.scale]])
             agent.is_colliding = {other_agent.name:False for other_agent in world.agents if agent is not other_agent}
             if not self.small_agents:
@@ -41,9 +44,28 @@ class Scenario(BaseScenario):
         self.reset_world(world)
 
         return world
+    
+    def agent_colors(self,n_agents):
+        if n_agents<8:
+            def DecimalToBinary(num,binary):
+                if num >= 1:
+                    DecimalToBinary(num // 2,binary)
+                    binary.append(num%2)
+                return binary
+            color_matrix=[]
+            for i in range(n_agents):
+                binary=DecimalToBinary(i,[])
+                while len(binary)<3:
+                    binary.insert(0,0)
+                color_matrix.append(binary)
+        else:
+            color_matrix=np.random.random(n_agents,3)
+            color_matrix[:,0]=np.array([0,0,1]) 
+        return color_matrix
 
     def reset_world(self, world):
-        colors = [np.array([0.8, 0., 0.]), np.array([0., 0.8, 0.]), np.array([0., 0., 0.8])]
+        colors=self.agent_colors(len(world.agents))
+        #colors = [np.array([0.8, 0., 0.]), np.array([0., 0.8, 0.]), np.array([0., 0., 0.8])]
         # random properties for agents
         for i, agent in enumerate(world.agents):
             if not self.color_objects:
@@ -149,11 +171,21 @@ class Scenario(BaseScenario):
         for i in range(n):
             network[i,(i+1)%n]=1
 
-        personal_rewards= np.matmul(personal_rewards,network)
+        
+        reward_type='multiplicative'
+        agent_i=int(agent.name[-1])
+        #multiplicative reward:
+        if reward_type=='multiplicative':
+            rew=1
+            for i,reward in enumerate(personal_rewards):
+                rew*=reward**network[i,agent_i]
+        else:    
+            #additive reward
+            personal_rewards= np.matmul(personal_rewards,network)
 
-        i=int(agent.name[-1])
+            agent_i=int(agent.name[-1])
 
-        rew=personal_rewards[i]
+            rew=personal_rewards[agent_i]
         
         return rew
 

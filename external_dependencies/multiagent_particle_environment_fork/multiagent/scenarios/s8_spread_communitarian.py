@@ -10,9 +10,9 @@ class Scenario(BaseScenario):
         self.shuffle_landmarks = shuffle_landmarks
         self.color_objects = color_objects
         self.small_agents = small_agents
-
+        
         colors=self.agent_colors(n_agents)
-
+        
         # set any world properties first
         num_agents = n_agents
         num_landmarks = n_agents
@@ -44,7 +44,7 @@ class Scenario(BaseScenario):
         self.reset_world(world)
 
         return world
-
+    
     def agent_colors(self,n_agents):
         if n_agents<8:
             def DecimalToBinary(num,binary):
@@ -82,13 +82,17 @@ class Scenario(BaseScenario):
                 landmark.color = colors[i]
         # set random initial states
         for agent in world.agents:
-            agent.state.p_pos = np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            pos[0]=.95
+            agent.state.p_pos = pos
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
             if self.shuffle_landmarks:
                 agent.point_of_vue = np.random.permutation(len(world.landmarks))
         for i, landmark in enumerate(world.landmarks):
-            landmark.state.p_pos = np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            pos[0]=-.95
+            landmark.state.p_pos = pos
             landmark.state.p_vel = np.zeros(world.dim_p)
 
     def benchmark_data(self, agent, world):
@@ -162,13 +166,13 @@ class Scenario(BaseScenario):
         
         personal_rewards=np.array(personal_rewards)
 
-        #survivalist network
+        #communitarian network
         n=len(world.agents)
-        network=np.zeros((n,n))
-        np.fill_diagonal(network,1)
+        network=np.ones((n,n))
+        #np.fill_diagonal(network,1)
         #network[:,0]=1
         
-        reward_type='multiplicative'
+        reward_type='additive'
         agent_i=int(agent.name[-1])
         #multiplicative reward:
         if reward_type=='multiplicative':
