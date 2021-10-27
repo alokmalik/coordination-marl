@@ -173,11 +173,14 @@ class Scenario(BaseScenario):
         
         personal_rewards=np.array(personal_rewards)
 
-        #communitarian network
+        #tribal network
         n=len(world.agents)
-        network=np.ones((n,n))
-        #np.fill_diagonal(network,1)
+        network=np.zeros((n,n))
+        np.fill_diagonal(network,1)
         #network[:,0]=1
+
+        for i in range(n):
+            network[i,(i+1)%n]=1
         
         reward_type='additive'
         agent_i=int(agent.name[-1])

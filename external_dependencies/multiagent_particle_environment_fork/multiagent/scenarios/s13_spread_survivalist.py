@@ -11,9 +11,9 @@ class Scenario(BaseScenario):
         self.color_objects = color_objects
         self.small_agents = small_agents
         self.order_flag=[False,False]
-        
+
         colors=self.agent_colors(n_agents)
-        
+
         # set any world properties first
         num_agents = n_agents
         num_landmarks = n_agents
@@ -45,7 +45,7 @@ class Scenario(BaseScenario):
         self.reset_world(world)
 
         return world
-    
+
     def agent_colors(self,n_agents):
         if n_agents<8:
             def DecimalToBinary(num,binary):
@@ -160,7 +160,6 @@ class Scenario(BaseScenario):
                     self.order_flag[0]=True
                 else:
                     self.order_flag[1]=True
-                
         return rew
         
          
@@ -173,10 +172,10 @@ class Scenario(BaseScenario):
         
         personal_rewards=np.array(personal_rewards)
 
-        #communitarian network
+        #survivalist network
         n=len(world.agents)
-        network=np.ones((n,n))
-        #np.fill_diagonal(network,1)
+        network=np.zeros((n,n))
+        np.fill_diagonal(network,1)
         #network[:,0]=1
         
         reward_type='additive'
@@ -193,10 +192,8 @@ class Scenario(BaseScenario):
             agent_i=int(agent.name[-1])
 
             rew=personal_rewards[agent_i]
-
             if self.order_flag[0]:
                 rew*=10
-            
         
         return rew
 
@@ -205,10 +202,10 @@ class Scenario(BaseScenario):
     def observation(self, agent, world):
         # get positions of all entities in this agent's reference frame
         entity_pos = []
-        #order_flag=self.order_flag
+        entity_col=[]
         for entity in world.landmarks:  # world.entities:
             entity_pos.append(entity.state.p_pos - agent.state.p_pos)
-            #entity_col.append(entity.color)
+            entity_col.append(entity.color)
         # communication and position of all other agentsof all other agents
         comm = []
         other_pos = []
@@ -221,4 +218,4 @@ class Scenario(BaseScenario):
         if self.shuffle_landmarks:
             entity_pos = np.array(entity_pos)[agent.point_of_vue]
             entity_pos = list(entity_pos)
-        return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos  + other_pos + comm)
+        return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + comm)

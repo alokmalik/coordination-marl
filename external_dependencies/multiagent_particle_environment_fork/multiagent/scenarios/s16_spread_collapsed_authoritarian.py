@@ -173,11 +173,11 @@ class Scenario(BaseScenario):
         
         personal_rewards=np.array(personal_rewards)
 
-        #communitarian network
+        #collapsed authoratirian network
         n=len(world.agents)
-        network=np.ones((n,n))
+        network=np.zeros((n,n))
         #np.fill_diagonal(network,1)
-        #network[:,0]=1
+        network[:,0]=1
         
         reward_type='additive'
         agent_i=int(agent.name[-1])
