@@ -151,9 +151,10 @@ class Scenario(BaseScenario):
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
         d=min(dists)
         agent_dists.append(d)
-        rew -= min(dists) * 0.1
+        
         if d<agent.size:
-            rew+=1
+            rew = (3-min(dists))**2 * 0.1
+            #rew+=1
         return rew
         
          

@@ -10,10 +10,9 @@ class Scenario(BaseScenario):
         self.shuffle_landmarks = shuffle_landmarks
         self.color_objects = color_objects
         self.small_agents = small_agents
-        self.order_flag=[False,False]
-        
+
         colors=self.agent_colors(n_agents)
-        
+
         # set any world properties first
         num_agents = n_agents
         num_landmarks = n_agents
@@ -22,7 +21,7 @@ class Scenario(BaseScenario):
         for i, agent in enumerate(world.agents):
             agent.name = 'agent_%d' % i
             if i==0:
-                agent.max_speed=.5
+                agent.max_speed=.2
             else:
                 agent.max_speed=1
             agent.color=colors[i]
@@ -45,7 +44,7 @@ class Scenario(BaseScenario):
         self.reset_world(world)
 
         return world
-    
+
     def agent_colors(self,n_agents):
         if n_agents<8:
             def DecimalToBinary(num,binary):
@@ -90,8 +89,19 @@ class Scenario(BaseScenario):
             agent.state.c = np.zeros(world.dim_c)
             if self.shuffle_landmarks:
                 agent.point_of_vue = np.random.permutation(len(world.landmarks))
+        l_pos=[]
+        size=world.agents[0].size
         for i, landmark in enumerate(world.landmarks):
-            pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            flag=True
+            while flag:
+                pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
+                c=0
+                for p in l_pos:
+                    if abs(pos[1]-p)<2*size:
+                        c=1
+                if not c:
+                    flag=False
+            l_pos.append(pos[1])
             pos[0]=-.95
             landmark.state.p_pos = pos
             landmark.state.p_vel = np.zeros(world.dim_p)
@@ -147,20 +157,12 @@ class Scenario(BaseScenario):
 
     def dense_reward(self, agent, world):
         #the agent gets reward proportional to the nearest
-        agent_dists=[]
         rew=0
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
         d=min(dists)
-        agent_dists.append(d)
-        rew -= min(dists) * 0.1
+        
         if d<agent.size:
-            rew+=1
-            if not sum(self.order_flag):
-                if int(agent.name[-1])==0:
-                    self.order_flag[0]=True
-                else:
-                    self.order_flag[1]=True
-                
+            rew = (3-min(dists))**2 * 0.1
         return rew
         
          
@@ -173,7 +175,7 @@ class Scenario(BaseScenario):
         
         personal_rewards=np.array(personal_rewards)
 
-        #tribal network
+        #Tribal network
         n=len(world.agents)
         network=np.zeros((n,n))
         np.fill_diagonal(network,1)
@@ -182,13 +184,14 @@ class Scenario(BaseScenario):
         for i in range(n):
             network[i,(i+1)%n]=1
         
-        reward_type='additive'
+        reward_type='multiplicative'
         agent_i=int(agent.name[-1])
         #multiplicative reward:
         if reward_type=='multiplicative':
+            net=network[agent_i,:]
             rew=1
-            for i,reward in enumerate(personal_rewards):
-                rew*=reward**network[i,agent_i]
+            for j,power in enumerate(net):
+                rew*=personal_rewards[j]**power
         else:    
             #additive reward
             personal_rewards= np.matmul(personal_rewards,network)
@@ -196,10 +199,6 @@ class Scenario(BaseScenario):
             agent_i=int(agent.name[-1])
 
             rew=personal_rewards[agent_i]
-
-            if self.order_flag[0]:
-                rew*=10
-            
         
         return rew
 
@@ -208,10 +207,10 @@ class Scenario(BaseScenario):
     def observation(self, agent, world):
         # get positions of all entities in this agent's reference frame
         entity_pos = []
-        #order_flag=self.order_flag
+        entity_col=[]
         for entity in world.landmarks:  # world.entities:
             entity_pos.append(entity.state.p_pos - agent.state.p_pos)
-            #entity_col.append(entity.color)
+            entity_col.append(entity.color)
         # communication and position of all other agentsof all other agents
         comm = []
         other_pos = []
@@ -224,4 +223,4 @@ class Scenario(BaseScenario):
         if self.shuffle_landmarks:
             entity_pos = np.array(entity_pos)[agent.point_of_vue]
             entity_pos = list(entity_pos)
-        return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos  + other_pos + comm)
+        return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + comm)

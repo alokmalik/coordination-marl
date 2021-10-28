@@ -11,21 +11,19 @@ class Scenario(BaseScenario):
         self.color_objects = color_objects
         self.small_agents = small_agents
 
+        colors=self.agent_colors(n_agents)
+
         # set any world properties first
         num_agents = n_agents
         num_landmarks = n_agents
-
-        colors=self.agent_colors(n_agents)
-
         # add agents
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
             agent.name = 'agent_%d' % i
             if i==0:
-                agent.max_speed=.1
+                agent.max_speed=.2
             else:
-                agent.max_speed=10
-            
+                agent.max_speed=1
             agent.color=colors[i]
             agent.clip_positions = np.array([[-world.scale, -world.scale], [world.scale, world.scale]])
             agent.is_colliding = {other_agent.name:False for other_agent in world.agents if agent is not other_agent}
@@ -46,7 +44,7 @@ class Scenario(BaseScenario):
         self.reset_world(world)
 
         return world
-    
+
     def agent_colors(self,n_agents):
         if n_agents<8:
             def DecimalToBinary(num,binary):
@@ -91,9 +89,9 @@ class Scenario(BaseScenario):
             agent.state.c = np.zeros(world.dim_c)
             if self.shuffle_landmarks:
                 agent.point_of_vue = np.random.permutation(len(world.landmarks))
+        
         for i, landmark in enumerate(world.landmarks):
-            pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
-            pos[0]=-.95
+            pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)  
             landmark.state.p_pos = pos
             landmark.state.p_vel = np.zeros(world.dim_p)
 
@@ -148,14 +146,12 @@ class Scenario(BaseScenario):
 
     def dense_reward(self, agent, world):
         #the agent gets reward proportional to the nearest
-        agent_dists=[]
         rew=0
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
         d=min(dists)
-        agent_dists.append(d)
-        rew -= min(dists) * 0.1
+        
         if d<agent.size:
-            rew+=1
+            rew = (3-min(dists))**2 * 0.1
         return rew
         
          
@@ -168,25 +164,26 @@ class Scenario(BaseScenario):
         
         personal_rewards=np.array(personal_rewards)
 
-        #survivalist network
+        #Tribal network
         n=len(world.agents)
         network=np.zeros((n,n))
         #np.fill_diagonal(network,1)
         #network[:,0]=1
+
         for i in range(n):
             network[i,(i+1)%n]=1
-
         
-        reward_type='additive'
+        reward_type='multiplicative'
         agent_i=int(agent.name[-1])
         #multiplicative reward:
         if reward_type=='multiplicative':
+            net=network[agent_i,:]
             rew=1
-            for i,reward in enumerate(personal_rewards):
-                rew*=reward**network[i,agent_i]
+            for j,power in enumerate(net):
+                rew*=personal_rewards[j]**power
         else:    
             #additive reward
-            personal_rewards= np.matmul(personal_rewards,network)
+            personal_rewards= np.matmul(network, personal_rewards)
 
             agent_i=int(agent.name[-1])
 

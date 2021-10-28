@@ -21,7 +21,7 @@ class Scenario(BaseScenario):
         for i, agent in enumerate(world.agents):
             agent.name = 'agent_%d' % i
             if i==0:
-                agent.max_speed=.2
+                agent.max_speed=.5
             else:
                 agent.max_speed=1
             agent.color=colors[i]
@@ -89,19 +89,8 @@ class Scenario(BaseScenario):
             agent.state.c = np.zeros(world.dim_c)
             if self.shuffle_landmarks:
                 agent.point_of_vue = np.random.permutation(len(world.landmarks))
-        l_pos=[]
-        size=world.agents[0].size
         for i, landmark in enumerate(world.landmarks):
-            flag=True
-            while flag:
-                pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
-                c=0
-                for p in l_pos:
-                    if abs(pos[1]-p)<2*size:
-                        c=1
-                if not c:
-                    flag=False
-            l_pos.append(pos[1])
+            pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
             pos[0]=-.95
             landmark.state.p_pos = pos
             landmark.state.p_vel = np.zeros(world.dim_p)
@@ -157,12 +146,14 @@ class Scenario(BaseScenario):
 
     def dense_reward(self, agent, world):
         #the agent gets reward proportional to the nearest
+        agent_dists=[]
         rew=0
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
         d=min(dists)
-        
+        agent_dists.append(d)
+        rew -= min(dists) * 0.1
         if d<agent.size:
-            rew = (3-min(dists))**2 * 0.1
+            rew+=1
         return rew
         
          
@@ -175,28 +166,41 @@ class Scenario(BaseScenario):
         
         personal_rewards=np.array(personal_rewards)
 
-        #authoritarian network
+        reached=[False,False,False]
+
+        for i,a in enumerate(world.agents):
+            dists = [np.sqrt(np.sum(np.square(a.state.p_pos - l.state.p_pos))) for l in world.landmarks]
+            d=min(dists)
+            if d<a.size:
+                reached[i]=True
+
+        
+        #collapsed tribal network
         n=len(world.agents)
         network=np.zeros((n,n))
-        np.fill_diagonal(network,1)
-        network[:,0]=1
+    
+        for i in range(n):
+            network[i,(i+1)%n]=1
         
-        reward_type='multiplicative'
+        reward_type='additive'
         agent_i=int(agent.name[-1])
         #multiplicative reward:
         if reward_type=='multiplicative':
-            net=network[agent_i,:]
             rew=1
-            for j,power in enumerate(net):
-                rew*=personal_rewards[j]**power
+            for i,reward in enumerate(personal_rewards):
+                rew*=reward**network[i,agent_i]
         else:    
-            
             #additive reward
             personal_rewards= np.matmul(personal_rewards,network)
-            agent_i=int(agent.name[-1])
-            rew=personal_rewards[agent_i]
 
-        return rew
+            agent_i=int(agent.name[-1])
+
+            rew=personal_rewards[agent_i]
+        
+        if reached[0]:
+            return rew
+        else:
+            return 0
 
 
 
