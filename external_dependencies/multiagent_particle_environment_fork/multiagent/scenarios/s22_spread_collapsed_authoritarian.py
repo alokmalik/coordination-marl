@@ -20,10 +20,9 @@ class Scenario(BaseScenario):
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
             agent.name = 'agent_%d' % i
+            agent.max_speed=None
             if i==0:
-                agent.max_speed=.1
-            else:
-                agent.max_speed=1
+                agent.accel=.1
             agent.color=colors[i]
             agent.clip_positions = np.array([[-world.scale, -world.scale], [world.scale, world.scale]])
             agent.is_colliding = {other_agent.name:False for other_agent in world.agents if agent is not other_agent}
@@ -157,13 +156,14 @@ class Scenario(BaseScenario):
 
     def dense_reward(self, agent, world):
         #the agent gets reward proportional to the nearest
-        rew=1
+        #rew=1
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
         d=min(dists)
         sigma=.1
+
+        reward=np.exp(-d**2/sigma**2)
         if d<agent.size:
-            rew = np.exp(-d**2/sigma**2)
-            #rew = (3-min(dists))**2 * 0.1
+            rew *= 10
         return rew
         
          
@@ -176,10 +176,10 @@ class Scenario(BaseScenario):
         
         personal_rewards=np.array(personal_rewards)
 
-        #authoritarian network
+        #collapsed authoritarian network
         n=len(world.agents)
         network=np.zeros((n,n))
-        np.fill_diagonal(network,1)
+        #np.fill_diagonal(network,1)
         network[:,0]=1
         
         reward_type='multiplicative'
@@ -191,12 +191,13 @@ class Scenario(BaseScenario):
             for j,power in enumerate(net):
                 rew*=personal_rewards[j]**power
         else:    
-            
             #additive reward
             personal_rewards= np.matmul(personal_rewards,network)
-            agent_i=int(agent.name[-1])
-            rew=personal_rewards[agent_i]
 
+            agent_i=int(agent.name[-1])
+
+            rew=personal_rewards[agent_i]
+        
         return rew
 
 

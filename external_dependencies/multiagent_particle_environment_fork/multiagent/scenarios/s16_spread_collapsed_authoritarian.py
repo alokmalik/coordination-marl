@@ -20,10 +20,9 @@ class Scenario(BaseScenario):
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
             agent.name = 'agent_%d' % i
+            agent.max_speed=None
             if i==0:
-                agent.max_speed=.2
-            else:
-                agent.max_speed=1
+                agent.accel=.1
             agent.color=colors[i]
             agent.clip_positions = np.array([[-world.scale, -world.scale], [world.scale, world.scale]])
             agent.is_colliding = {other_agent.name:False for other_agent in world.agents if agent is not other_agent}
@@ -157,12 +156,13 @@ class Scenario(BaseScenario):
 
     def dense_reward(self, agent, world):
         #the agent gets reward proportional to the nearest
-        rew=0
+        rew=1
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
         d=min(dists)
-        
+        sigma=.1
         if d<agent.size:
-            rew = (3-min(dists))**2 * 0.1
+            rew = np.exp(-d**2/sigma**2)
+            #rew = (3-min(dists))**2 * 0.1
         return rew
         
          
