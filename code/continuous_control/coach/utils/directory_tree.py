@@ -36,6 +36,10 @@ class DirectoryManager(object):
                  experiment_num=None, current_repo_hash=None, env_repo_hash=None, id=None):
 
         # Defines storage_name id
+        
+        if not os.path.isdir(DirectoryManager.root):
+            print('*'*100)
+            os.mkdir(DirectoryManager.root)
 
         if id is not None:
             id = id

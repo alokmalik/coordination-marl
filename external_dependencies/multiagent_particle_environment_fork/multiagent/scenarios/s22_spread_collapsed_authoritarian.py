@@ -161,7 +161,7 @@ class Scenario(BaseScenario):
         d=min(dists)
         sigma=.1
 
-        reward=np.exp(-d**2/sigma**2)
+        rew=np.exp(-d**2/sigma**2)
         if d<agent.size:
             rew *= 10
         return rew
