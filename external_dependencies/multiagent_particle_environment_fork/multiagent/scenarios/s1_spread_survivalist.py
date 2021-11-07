@@ -20,10 +20,9 @@ class Scenario(BaseScenario):
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
             agent.name = 'agent_%d' % i
-            if i==0:
-                agent.max_speed=.1
-            else:
-                agent.max_speed=10
+            agent.max_speed=None
+            '''if i==0:
+                agent.accel=.1'''
             agent.color=colors[i]
             agent.clip_positions = np.array([[-world.scale, -world.scale], [world.scale, world.scale]])
             agent.is_colliding = {other_agent.name:False for other_agent in world.agents if agent is not other_agent}
@@ -82,13 +81,18 @@ class Scenario(BaseScenario):
                 landmark.color = colors[i]
         # set random initial states
         for agent in world.agents:
-            agent.state.p_pos = np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            #pos[0]=.95
+            agent.state.p_pos = pos
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
             if self.shuffle_landmarks:
                 agent.point_of_vue = np.random.permutation(len(world.landmarks))
+        l_pos=[]
+        size=world.agents[0].size
         for i, landmark in enumerate(world.landmarks):
-            landmark.state.p_pos = np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            landmark.state.p_pos = pos
             landmark.state.p_vel = np.zeros(world.dim_p)
 
     def benchmark_data(self, agent, world):
@@ -128,7 +132,7 @@ class Scenario(BaseScenario):
         return n_collisions
 
 
-    def sparse_reward(self, agent, world):
+    '''def sparse_reward(self, agent, world):
         rew = 0
         #if all agents are occupying a landmark then agent gets +100 reward 
         for l in world.landmarks:
@@ -138,7 +142,7 @@ class Scenario(BaseScenario):
                 agents_in = [np.sum(np.square(a.state.p_pos - l.state.p_pos)) < l.size**2 for a in world.agents]
             rew += 100. if sum(agents_in)==len(world.agents) else 0.
 
-        return rew
+        return rew'''
 
     def dense_reward(self, agent, world):
         #the agent gets reward proportional to the nearest
@@ -162,12 +166,42 @@ class Scenario(BaseScenario):
         
         personal_rewards=np.array(personal_rewards)
 
-        #survivalist network
-        n=len(world.agents)
-        network=np.zeros((n,n))
-        np.fill_diagonal(network,1)
-        #network[:,0]=1
+        network='survivalist'
+
+        if network=='survivalist':
+            #survivalist network
+            n=len(world.agents)
+            network=np.zeros((n,n))
+            np.fill_diagonal(network,1)
+            #network[:,0]=1
+        elif network=='communitarian':
+            n=len(world.agents)
+            network=np.ones((n,n))
+        elif network=='authoritarian':
+            n=len(world.agents)
+            network=np.zeros((n,n))
+            np.fill_diagonal(network,1)
+            network[:,0]=1
+        elif network=='collapsed_authoritarian':
+            n=len(world.agents)
+            network=np.zeros((n,n))
+            #np.fill_diagonal(network,1)
+            network[:,0]=1
+        elif network=='tribal':
+            n=len(world.agents)
+            network=np.zeros((n,n))
+            np.fill_diagonal(network,1)
+            for i in range(n):
+                network[i,(i+1)%n]=1
+        elif network=='collapsed_tribal':
+            n=len(world.agents)
+            network=np.zeros((n,n))
+            #np.fill_diagonal(network,1)
+            for i in range(n):
+                network[i,(i+1)%n]=1
         
+
+
         reward_type='multiplicative'
         agent_i=int(agent.name[-1])
         #multiplicative reward:
@@ -183,6 +217,14 @@ class Scenario(BaseScenario):
 
             rew=personal_rewards[agent_i]
         
+        return rew
+
+    def test_reward(self,agent,world):
+        '''
+        Reward fucntion without networks,
+        to be used at test time only
+        '''
+        rew=self.dense_reward(agent,world)
         return rew
 
 

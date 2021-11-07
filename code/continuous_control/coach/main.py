@@ -96,6 +96,8 @@ def get_training_args(overwritten_args=None):
     parser.add_argument("--use_dense_rewards", default=False, type=parse_bool)
     parser.add_argument("--individual_reward", type=parse_bool, default=None,
                         help="Only supported for scripted_prey_tag")
+    parser.add_argument("--test_reward",type=parse_bool,default=True)
+
     return parser.parse_args(overwritten_args)
 
 
@@ -390,6 +392,7 @@ def train(config, dir_manager=None, logger=None, pbar="default_pbar"):
                     eval_config.n_episodes = config.n_evaluation_episodes
                     eval_config.last_model = True
                     eval_config.episode_length = config.episode_length
+                    eval_config.test_reward=config.test_reward
 
                     eval_reward = np.vstack(evaluate(eval_config))
                     train_recorder.append('eval_episodes', ep_dones)

@@ -66,12 +66,14 @@ def get_evaluation_args(overwritten_args=None):
     parser.add_argument("--small_agents", type=parse_bool, default=None, help="For spread only")
     parser.add_argument("--individual_reward", type=parse_bool, default=None, help="For chase")
     parser.add_argument("--use_dense_rewards", default=False, type=parse_bool)
+    parser.add_argument("--test_reward",default=True,type=parse_bool)
 
     return parser.parse_args(overwritten_args)
 
 
 def evaluate(config):
     DirectoryManager.root = Path(config.root)
+    
 
     if config.seed_num is None:
         all_seeds = list(
@@ -130,7 +132,8 @@ def evaluate(config):
     env = make_env(scenario_name=env_params['env_name'],
                    use_discrete_action=algorithm.use_discrete_action,
                    use_max_speed=env_params['use_max_speed'],
-                   world_params=world_params)
+                   world_params=world_params,
+                   test_env=True)
     if config.render:
         env.render()
 

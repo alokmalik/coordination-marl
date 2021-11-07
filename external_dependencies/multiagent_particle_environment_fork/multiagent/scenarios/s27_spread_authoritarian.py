@@ -10,6 +10,7 @@ class Scenario(BaseScenario):
         self.shuffle_landmarks = shuffle_landmarks
         self.color_objects = color_objects
         self.small_agents = small_agents
+        self.agent_order=np.zeros(n_agents)
 
         colors=self.agent_colors(n_agents)
 
@@ -21,8 +22,8 @@ class Scenario(BaseScenario):
         for i, agent in enumerate(world.agents):
             agent.name = 'agent_%d' % i
             agent.max_speed=None
-            if i==0:
-                agent.accel=.1
+            '''if i==0:
+                agent.accel=.1'''
             agent.color=colors[i]
             agent.clip_positions = np.array([[-world.scale, -world.scale], [world.scale, world.scale]])
             agent.is_colliding = {other_agent.name:False for other_agent in world.agents if agent is not other_agent}
@@ -82,7 +83,7 @@ class Scenario(BaseScenario):
         # set random initial states
         for agent in world.agents:
             pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
-            #pos[0]=.95
+            pos[0]=.95
             agent.state.p_pos = pos
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
@@ -91,7 +92,17 @@ class Scenario(BaseScenario):
         l_pos=[]
         size=world.agents[0].size
         for i, landmark in enumerate(world.landmarks):
-            pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
+            flag=True
+            while flag:
+                pos=np.random.uniform(-world.scale, +world.scale, world.dim_p)
+                c=0
+                for p in l_pos:
+                    if abs(pos[1]-p)<2*size:
+                        c=1
+                if not c:
+                    flag=False
+            l_pos.append(pos[1])
+            pos[0]=-.95
             landmark.state.p_pos = pos
             landmark.state.p_vel = np.zeros(world.dim_p)
 
@@ -146,14 +157,28 @@ class Scenario(BaseScenario):
 
     def dense_reward(self, agent, world):
         #the agent gets reward proportional to the nearest
-        agent_dists=[]
-        rew=0
+        #rew=1
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
         d=min(dists)
-        agent_dists.append(d)
-        rew -= min(dists) * 0.1
-        if d<agent.size:
-            rew+=1
+        sigma=.1
+
+        rew=np.exp(-d**2/sigma**2)
+
+        for i,a in enumerate(world.agents):
+            dists = [np.sqrt(np.sum(np.square(a.state.p_pos - l.state.p_pos))) for l in world.landmarks]
+            if min(dists)<a.size and i+1 not in self.agent_order:
+                z=np.argmin(self.agent_order)
+                self.agent_order[z]=i+1
+
+        if sum(self.agent_order==0)==0 and self.agent_order[0]==1:
+            rew*=100
+        elif d<agent.size:
+            rew *= 10
+
+
+
+
+        
         return rew
         
          
@@ -248,4 +273,4 @@ class Scenario(BaseScenario):
         if self.shuffle_landmarks:
             entity_pos = np.array(entity_pos)[agent.point_of_vue]
             entity_pos = list(entity_pos)
-        return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + comm)
+        return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + comm+[self.agent_order])
