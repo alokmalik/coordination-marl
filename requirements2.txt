@@ -1,76 +1,56 @@
-absl-py==0.14.0
+absl-py @ file:///tmp/build/80754af9/absl-py_1623861369333/work
 astor==0.8.1
-attrs==21.2.0
-cachetools==4.2.2
+-e git+https://github.com/openai/baselines@ea25b9e8b234e6ee1bca43083f8f3cf974143998#egg=baselines
+cached-property @ file:///tmp/build/80754af9/cached-property_1600785575025/work
 certifi==2021.10.8
-cffi==1.14.6
-charset-normalizer==2.0.6
 click==8.0.3
 cloudpickle==1.2.2
+coverage @ file:///tmp/build/80754af9/coverage_1614614864940/work
 cycler==0.10.0
-Cython==0.29.13
-fasteners==0.16.3
+Cython @ file:///tmp/build/80754af9/cython_1636023774860/work
+fonttools==4.25.0
 future==0.18.2
-gast==0.2.2
-glfw==2.2.0
-google-auth==1.35.0
-google-auth-oauthlib==0.4.6
-google-pasta==0.1.7
-grpcio==1.41.0
+gast @ file:///tmp/build/80754af9/gast_1632115987108/work
+google-pasta @ file:///Users/ktietz/demo/mc3/conda-bld/google-pasta_1630577991354/work
+grpcio @ file:///tmp/build/80754af9/grpcio_1614883945333/work
 gym==0.15.7
-h5py==3.4.0
-idna==3.2
-imageio==2.5.0
-importlib-metadata==0.19
-importlib-resources==5.2.2
-iniconfig==1.1.1
+h5py @ file:///tmp/build/80754af9/h5py_1636040309838/work
+imageio==2.10.3
+importlib-metadata @ file:///tmp/build/80754af9/importlib-metadata_1631906757572/work
 joblib==1.1.0
-Keras-Applications==1.0.8
-Keras-Preprocessing==1.1.0
-kiwisolver==1.3.2
-lockfile==0.12.2
-Markdown==3.1.1
-matplotlib==3.2.1
-mkl-fft==1.3.0
+Keras-Applications @ file:///tmp/build/80754af9/keras-applications_1594366238411/work
+Keras-Preprocessing @ file:///tmp/build/80754af9/keras-preprocessing_1612283640596/work
+kiwisolver @ file:///tmp/build/80754af9/kiwisolver_1612282414123/work
+Markdown @ file:///tmp/build/80754af9/markdown_1614363832606/work
+matplotlib @ file:///tmp/build/80754af9/matplotlib-suite_1634667019719/work
+mkl-fft==1.3.1
+mkl-random @ file:///tmp/build/80754af9/mkl_random_1626179032232/work
 mkl-service==2.4.0
-numpy==1.17.0
+-e git+https://www.github.com/alokmalik/coordination-marl@a6a1807cd77c021ac29b7d717ab34616484c8b78#egg=multiagent&subdirectory=external_dependencies/multiagent_particle_environment_fork
+munkres==1.1.4
+numpy==1.21.4
 numpy-stl==2.16.3
-oauthlib==3.1.1
-opencv-python==4.5.3.56
-opt-einsum==3.3.0
-packaging==21.0
-pandas==1.3.3
-Pillow==8.3.2
-pluggy==1.0.0
-protobuf==3.18.0
-py==1.10.0
-pyasn1==0.4.8
-pyasn1-modules==0.2.8
-pycparser==2.20
+olefile==0.46
+opencv-python==4.5.4.58
+pandas==1.3.4
+Pillow==8.4.0
+protobuf==3.17.2
 pyglet==1.5.0
-pyparsing==2.4.7
-pytest==6.2.5
-python-dateutil==2.8.2
+pyparsing @ file:///tmp/build/80754af9/pyparsing_1635766073266/work
+python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
 python-utils==2.5.6
-pytz==2021.1
-pyzmq==22.3.0
-readchar==3.0.4
-requests==2.26.0
-requests-oauthlib==1.3.0
-rsa==4.7.2
-scipy==1.3.0
-seaborn==0.9.0
-six==1.12.0
+pytz==2021.3
+scipy @ file:///tmp/build/80754af9/scipy_1630606797510/work
+seaborn==0.11.2
+six @ file:///tmp/build/80754af9/six_1623709665295/work
 tensorboard==1.14.0
-tensorboard-data-server==0.6.1
-tensorboard-plugin-wit==1.8.0
 tensorflow==1.14.0
 tensorflow-estimator==1.14.0
 termcolor==1.1.0
-toml==0.10.2
 torch==1.2.0
-tqdm==4.46.0
-urllib3==1.26.7
-Werkzeug==0.15.5
+tornado @ file:///tmp/build/80754af9/tornado_1606942283357/work
+tqdm==4.62.3
+typing-extensions @ file:///tmp/build/80754af9/typing_extensions_1631814937681/work
+Werkzeug @ file:///tmp/build/80754af9/werkzeug_1635505089296/work
 wrapt==1.12.1
-zipp==0.5.2
+zipp @ file:///tmp/build/80754af9/zipp_1633618647012/work
