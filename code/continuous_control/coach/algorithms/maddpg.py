@@ -293,7 +293,7 @@ class MADDPG(Algorithm):
             stuff_to_record=['total_reward', 'actor_loss', 'critic_loss', 'agent_colors', 'eval_episodes',
                              'eval_total_reward', 'JE_loss', 'JPGE_loss'])
 
-    def save_training_graphs(self, train_recorder, save_dir):
+    def save_training_graphs(self, train_recorder, save_dir, network):
         agent_colors = train_recorder.tape['agent_colors']
 
         # Losses
@@ -303,19 +303,19 @@ class MADDPG(Algorithm):
                     ys=np.vstack(train_recorder.tape['actor_loss']).T,
                     labels=[f"agent {i}" for i in range(self.nagents)],
                     colors=[color for color in agent_colors],
-                    title="Actor Loss")
+                    title="Actor Loss (network:%s)"%network)
         plot_curves(axes[0, 1],
                     ys=np.vstack(train_recorder.tape['critic_loss']).T,
                     labels=[f"agent {i}" for i in range(self.nagents)],
                     colors=[color for color in agent_colors],
-                    xlabel="Updates", title="Critic Loss")
+                    xlabel="Updates", title="Critic Loss (network:%s)"%network)
         plot_curves(axes[1, 0],
                     ys=np.vstack(train_recorder.tape['JE_loss']).T,
-                    xlabel="Updates", title="JE Loss")
+                    xlabel="Updates", title="JE Loss (network:%s)"%network)
 
         plot_curves(axes[1, 1],
                     ys=np.vstack(train_recorder.tape['JPGE_loss']).T,
-                    xlabel="Updates", title="JPGE Loss")
+                    xlabel="Updates", title="JPGE Loss (network:%s)"%network)
 
         fig.savefig(str(save_dir / 'curves.png'))
         plt.close(fig)
@@ -327,7 +327,7 @@ class MADDPG(Algorithm):
                     ys=np.vstack(train_recorder.tape['total_reward']).T,
                     colors=[color for color in agent_colors],
                     labels=[f"agent {i}" for i in range(self.nagents)],
-                    xlabel="Episodes", title="Return")
+                    xlabel="Episodes", title="Return (network:%s)"%network)
         fig.savefig(str(save_dir / 'return.png'))
         plt.close(fig)
 
@@ -341,7 +341,7 @@ class MADDPG(Algorithm):
                         stds=np.stack(train_recorder.tape['eval_total_reward']).std(axis=1).T,
                         colors=[color for color in agent_colors],
                         labels=[f"agent {i}" for i in range(self.nagents)],
-                        xlabel="Episodes", title="Return")
+                        xlabel="Episodes", title="Return (network:%s)"%network)
             fig.savefig(str(save_dir / 'eval_return.png'))
             plt.close(fig)
 

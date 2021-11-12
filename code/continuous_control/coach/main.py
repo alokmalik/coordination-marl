@@ -96,6 +96,7 @@ def get_training_args(overwritten_args=None):
     parser.add_argument("--use_dense_rewards", default=False, type=parse_bool)
     parser.add_argument("--individual_reward", type=parse_bool, default=None,
                         help="Only supported for scripted_prey_tag")
+    parser.add_argument("--network",default='survivalist', type=str,choices=SUPPORTED_ALGOS)
     parser.add_argument("--test_reward",type=parse_bool,default=True)
 
     return parser.parse_args(overwritten_args)
@@ -158,6 +159,7 @@ def train(config, dir_manager=None, logger=None, pbar="default_pbar"):
 
     world_params = {}
     world_params['use_dense_rewards'] = config.use_dense_rewards
+    world_params['network']=config.network
     if config.env_name == 'chase':
         if config.n_preys is not None: world_params['n_preys'] = config.n_preys
         if config.n_preds is not None: world_params['n_preds'] = config.n_preds
@@ -415,7 +417,7 @@ def train(config, dir_manager=None, logger=None, pbar="default_pbar"):
                 # Saving graphs
 
                 if len(train_recorder.tape['actor_loss']) > 0:
-                    algorithm.save_training_graphs(train_recorder=train_recorder, save_dir=dir_manager.seed_dir)
+                    algorithm.save_training_graphs(train_recorder=train_recorder, save_dir=dir_manager.seed_dir, network=config.network)
 
     # Saves model one last time and close the environment
 

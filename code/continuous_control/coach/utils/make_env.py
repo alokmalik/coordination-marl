@@ -54,15 +54,6 @@ def make_env(scenario_name, benchmark=False, use_discrete_action=False, use_max_
                             discrete_action=use_discrete_action,
                             use_max_speed=use_max_speed,
                             info_callback=scenario.benchmark_data)
-    elif test_env:
-        env = MultiAgentEnv(world,
-                            reset_callback=scenario.reset_world,
-                            reward_callback=scenario.test_reward,
-                            observation_callback=scenario.observation,
-                            done_callback=scenario.check_if_done,
-                            post_step_callback=scenario.post_step,
-                            discrete_action=use_discrete_action,
-                            use_max_speed=use_max_speed)
     
     else:
         env = MultiAgentEnv(world,

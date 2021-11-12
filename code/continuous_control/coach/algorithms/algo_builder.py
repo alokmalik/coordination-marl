@@ -56,3 +56,4 @@ def init_from_config(env, config, logger):
         raise ValueError('Algo is not supported')
 
     return algorithm
+    
