@@ -174,8 +174,7 @@ class Scenario(BaseScenario):
                     self.landmark_flag[i]=1
                     rew+=100
                     return rew
-        rew-=1
-        return rew 
+        return rew-1 
         
 
     def reward(self,agent,world):

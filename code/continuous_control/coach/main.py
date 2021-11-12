@@ -96,7 +96,7 @@ def get_training_args(overwritten_args=None):
     parser.add_argument("--use_dense_rewards", default=False, type=parse_bool)
     parser.add_argument("--individual_reward", type=parse_bool, default=None,
                         help="Only supported for scripted_prey_tag")
-    parser.add_argument("--network",default='survivalist', type=str,choices=SUPPORTED_ALGOS)
+    parser.add_argument("--network",default='survivalist', type=str,choices=SUPPORTED_NETWORKS)
     parser.add_argument("--test_reward",type=parse_bool,default=True)
 
     return parser.parse_args(overwritten_args)
