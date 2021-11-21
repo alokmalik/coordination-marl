@@ -160,6 +160,7 @@ def train(config, dir_manager=None, logger=None, pbar="default_pbar"):
     world_params = {}
     world_params['use_dense_rewards'] = config.use_dense_rewards
     world_params['network']=config.network
+    world_params['n_agents'] = config.n_agents
     if config.env_name == 'chase':
         if config.n_preys is not None: world_params['n_preys'] = config.n_preys
         if config.n_preds is not None: world_params['n_preds'] = config.n_preds
