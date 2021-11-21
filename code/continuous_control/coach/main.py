@@ -24,7 +24,7 @@ def get_training_args(overwritten_args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--desc", default="", type=str, help="Description of the experiment to be run")
     parser.add_argument("--env_name", default="", type=str, help="Name of environment")
-    parser.add_argument("--agent_alg", default="", type=str, choices=SUPPORTED_ALGOS, help="Name of the algorithm")
+    parser.add_argument("--agent_alg", default="CoachMADDPG", type=str, choices=SUPPORTED_ALGOS, help="Name of the algorithm")
     parser.add_argument("--adversary_alg", default=None)
     parser.add_argument("--seed", default=0, type=int, help="Random seed")
 
